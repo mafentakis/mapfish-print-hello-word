@@ -1,0 +1,15 @@
+templates:
+  main:
+    attributes:
+      title:
+        type: string
+        default: "Hello Map"
+      map:
+        type: map
+        width: 500
+        height: 400
+        dpi: 72
+        projection: EPSG:25832
+    processors:
+      - !reportBuilder
+        template: main.jrxml
