@@ -1,0 +1,8 @@
+{
+  "name": "MapFish Print Dev",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "runServices": ["print"],
+  "forwardPorts": [8080]
+}

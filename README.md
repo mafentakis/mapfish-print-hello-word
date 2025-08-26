@@ -2,6 +2,16 @@
 
 This repository contains a minimal MapFish Print 3 configuration and a Dockerfile to run it.
 
+## Codespaces
+
+This project includes a [devcontainer](.devcontainer/devcontainer.json) setup that runs the MapFish Print service as a sidecar container. When opened in GitHub Codespaces, the `print` service is built from the provided Dockerfile and exposed on port 8080.
+
+From the integrated terminal you can request a map with:
+
+```
+curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
+```
+
 ## Build the image
 
 ```
