@@ -6,8 +6,8 @@ services:
       - ..:/workspace:cached
     command: sleep infinity
   print:
-    build:
-      context: ..
-      dockerfile: Dockerfile
+    image: camptocamp/mapfish_print:3
+    volumes:
+      - ../print-apps:/usr/local/tomcat/webapps/ROOT/print-apps:ro
     ports:
       - "8080:8080"

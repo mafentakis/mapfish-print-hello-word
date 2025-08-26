@@ -1,10 +1,10 @@
 # MapFish Print Hello World
 
-This repository contains a minimal MapFish Print 3 configuration and a Dockerfile to run it.
+This repository contains a minimal MapFish Print 3 configuration and instructions to run it with the official Docker image.
 
 ## Codespaces
 
-This project includes a [devcontainer](.devcontainer/devcontainer.json) setup that runs the MapFish Print service as a sidecar container. When opened in GitHub Codespaces, the `print` service is built from the provided Dockerfile and exposed on port 8080.
+This project includes a [devcontainer](.devcontainer/devcontainer.json) setup that runs the MapFish Print service as a sidecar container. When opened in GitHub Codespaces, the `print` service uses the `camptocamp/mapfish_print:3` image and is exposed on port 8080.
 
 From the integrated terminal you can request a map with:
 
@@ -12,16 +12,10 @@ From the integrated terminal you can request a map with:
 curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
 ```
 
-## Build the image
-
-```
-docker build -t mapfish-print .
-```
-
 ## Run the container
 
 ```
-docker run --rm -p 8080:8080 mapfish-print
+docker run --rm -p 8080:8080 -v $(pwd)/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps camptocamp/mapfish_print:3
 ```
 
 The service will be available at `http://localhost:8080`.
