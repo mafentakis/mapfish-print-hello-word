@@ -4,25 +4,25 @@ This repository contains a minimal MapFish Print 3 configuration and instruction
 
 ## Codespaces
 
-This project includes a [devcontainer](.devcontainer/devcontainer.json) setup that runs the MapFish Print service as a sidecar container. When opened in GitHub Codespaces, the `print` service uses the `camptocamp/mapfish_print:3` image and is exposed on port 8080.
+This project includes a [devcontainer](.devcontainer/devcontainer.json) that starts the MapFish Print service as a sidecar when you open the repository in GitHub Codespaces. The sidecar runs the `camptocamp/mapfish_print:3` image on port 8080, so there is no need to execute `docker-compose` or any other Docker command.
 
-From the integrated terminal you can request a map with:
+To test the setup, open the integrated terminal and generate a map with:
 
 ```
 curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
 ```
 
-## Run the container
+The command downloads `map.pdf` into the workspace, which you can view directly in the Codespaces editor.
+
+## Run locally with Docker
+
+If you want to run MapFish Print outside Codespaces, start the official image and mount the configuration directory:
 
 ```
 docker run --rm -p 8080:8080 -v $(pwd)/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps camptocamp/mapfish_print:3
 ```
 
-The service will be available at `http://localhost:8080`.
-
-## Generate a sample map
-
-Send the provided print specification to the running container:
+Once the container is running, send the provided print specification to generate the sample map:
 
 ```
 curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
@@ -34,4 +34,4 @@ The request uses the configuration in `print-apps/`. The map is centered on Sieg
 https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml
 ```
 
-It returns the resulting map as `map.pdf`.
+The resulting PDF is written as `map.pdf`.
