@@ -4,7 +4,7 @@ This repository contains a minimal MapFish Print 3 configuration and instruction
 
 ## Codespaces
 
-This project includes a [devcontainer](.devcontainer/devcontainer.json) that starts the MapFish Print service as a sidecar when you open the repository in GitHub Codespaces. The sidecar runs the `camptocamp/mapfish_print:3` image on port 8080, so there is no need to execute `docker-compose` or any other Docker command.
+This project includes a [devcontainer](.devcontainer/devcontainer.json) that starts the MapFish Print service as a sidecar when you open the repository in GitHub Codespaces. The sidecar runs the `camptocamp/mapfish_print:3.53` image on port 8080, so there is no need to execute `docker-compose` or any other Docker command.
 
 To test the setup, open the integrated terminal and generate a map with:
 
@@ -19,7 +19,7 @@ The command downloads `map.pdf` into the workspace, which you can view directly 
 If you want to run MapFish Print outside Codespaces, start the official image and mount the configuration directory:
 
 ```
-docker run --rm -p 8080:8080 -v $(pwd)/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps camptocamp/mapfish_print:3
+docker run --rm -p 8080:8080 -v $(pwd)/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps camptocamp/mapfish_print:3.53
 ```
 
 Once the container is running, send the provided print specification to generate the sample map:
