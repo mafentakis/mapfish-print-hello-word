@@ -1,28 +1,29 @@
 # MapFish Print Hello World
 
-This repository contains a minimal MapFish Print 3 configuration and instructions to run it with the official Docker image.
+This repository contains a minimal MapFish Print 3 configuration and a Dockerfile that packages it into a runnable image.
 
 ## Codespaces
 
-This project includes a [devcontainer](.devcontainer/devcontainer.json) that starts the MapFish Print service as a sidecar when you open the repository in GitHub Codespaces. The sidecar runs the `camptocamp/mapfish_print:3.53.0` image on port 8080, so there is no need to execute `docker-compose` or any other Docker command.
+The included [devcontainer](.devcontainer/devcontainer.json) builds this Dockerfile and starts MapFish Print as a sidecar when you open the repository in GitHub Codespaces. The service listens on port 8080, so there is no need to run any Docker commands manually.
 
-To test the setup, open the integrated terminal and generate a map with:
+To test the setup, open the integrated terminal and generate a map:
 
 ```
 curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
 ```
 
-The command downloads `map.pdf` into the workspace, which you can view directly in the Codespaces editor.
+The command saves `map.pdf` in the workspace, which you can open directly in the editor.
 
 ## Run locally with Docker
 
-If you want to run MapFish Print outside Codespaces, start the official image and mount the configuration directory:
+To run MapFish Print outside Codespaces, build the image and start a container:
 
 ```
-docker run --rm -p 8080:8080 -v $(pwd)/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps camptocamp/mapfish_print:3.53.0
+docker build -t mapfish-print .
+docker run --rm -p 8080:8080 mapfish-print
 ```
 
-Once the container is running, send the provided print specification to generate the sample map:
+In another terminal, send the provided print specification to generate the sample map:
 
 ```
 curl -X POST -H "Content-Type: application/json" --data @spec.json http://localhost:8080/print/print.pdf -o map.pdf
