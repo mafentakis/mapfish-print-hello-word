@@ -1,0 +1,22 @@
+services:
+  print:
+    image: camptocamp/mapfish_print:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./print-apps:/usr/local/tomcat/webapps/ROOT/print-apps:ro
+
+  client:
+    image: curlimages/curl:latest
+    depends_on:
+      - print
+    volumes:
+      - ./request.json:/workspace/request.json:ro
+      - ./out:/out
+    command:
+      - sh
+      - -c
+      - >-
+        until curl -sf http://print:8080/print/apps.json > /dev/null; do echo waiting for print; sleep 1; done; curl -X POST -H 'Content-Type: application/json' --data @/workspace/request.json http://print:8080/print/print.pdf -o /out/map.pdf
+
+

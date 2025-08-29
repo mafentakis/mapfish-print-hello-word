@@ -1,0 +1,26 @@
+{
+  "layout": "main",
+  "outputFormat": "pdf",
+  "attributes": {
+    "title": "Hello world map",
+    "map": {
+      "projection": "EPSG:25832",
+      "center": [431350.93, 5636266.83],
+      "scale": 5000,
+      "dpi": 72,
+      "layers": [
+        {
+          "type": "wmts",
+          "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/",
+          "layer": "de_basemapde_web_raster",
+          "matrixSet": "EPSG:25832",
+          "format": "image/png",
+          "style": "default",
+          "requestEncoding": "REST"
+        }
+      ]
+    }
+  }
+}
+
+
