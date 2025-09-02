@@ -13,3 +13,5 @@ templates:
     processors:
       - !reportBuilder
         template: main.jrxml
+hosts:
+  - !acceptAll

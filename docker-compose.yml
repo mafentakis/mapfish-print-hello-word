@@ -5,11 +5,18 @@ services:
       - "8080:8080"
     volumes:
       - ./print-apps:/usr/local/tomcat/webapps/ROOT/print-apps:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/print/apps.json > /dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   client:
     image: curlimages/curl:latest
+    user: "0:0"
     depends_on:
-      - print
+      print:
+        condition: service_healthy
     volumes:
       - ./request.json:/workspace/request.json:ro
       - ./out:/out
@@ -17,6 +24,6 @@ services:
       - sh
       - -c
       - >-
-        until curl -sf http://print:8080/print/apps.json > /dev/null; do echo waiting for print; sleep 1; done; curl -X POST -H 'Content-Type: application/json' --data @/workspace/request.json http://print:8080/print/print.pdf -o /out/map.pdf
+        until curl -sf http://print:8080/print/apps.json > /dev/null; do echo waiting for print; sleep 2; done; mkdir -p /out && chmod 777 /out && curl -f -sS -X POST -H 'Content-Type: application/json' --data @/workspace/request.json http://print:8080/print/report.pdf -o /out/map.pdf
 
 
