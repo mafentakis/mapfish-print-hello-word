@@ -24,6 +24,6 @@ services:
       - sh
       - -c
       - >-
-        until curl -sf http://print:8080/print/apps.json > /dev/null; do echo waiting for print; sleep 2; done; mkdir -p /out && chmod 777 /out && curl -f -sS -X POST -H 'Content-Type: application/json' --data @/workspace/request.json http://print:8080/print/report.pdf -o /out/map.pdf
+        until curl -sf http://print:8080/print/apps.json > /dev/null; do echo waiting for print; sleep 2; done; mkdir -p /out && chmod 777 /out && curl -f -sS -X POST -H 'Content-Type: application/json' --data @/workspace/request.json http://print:8080/print/report.pdf
 
 

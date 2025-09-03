@@ -1,26 +1,51 @@
 {
-  "layout": "main",
   "outputFormat": "pdf",
+  "layout": "plain",
   "attributes": {
-    "title": "Hello world map",
     "map": {
-      "projection": "EPSG:25832",
-      "center": [431350.93, 5636266.83],
-      "scale": 5000,
+      "width": 780,
+      "height": 660,
+      "projection": "EPSG:3857",
       "dpi": 72,
+      "rotation": 0,
+      "center": [-8233518.5005945, 4980320.4059228],
+      "scale": 25000,
       "layers": [
         {
-          "type": "wmts",
-          "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/",
-          "layer": "de_basemapde_web_raster",
-          "matrixSet": "EPSG:25832",
-          "format": "image/png",
-          "style": "default",
-          "requestEncoding": "REST"
+          "type": "grid",
+          "gridType": "points",
+          "numberOfLines": [5, 5],
+          "renderAsSvg": true,
+          "haloColor": "#CCFFCC",
+          "labelColor": "black",
+          "labelFormat": "%1.0f %s",
+          "indent": 10,
+          "haloRadius": 4,
+          "font": {
+            "name": [
+              "Liberation Sans",
+              "Helvetica",
+              "Nimbus Sans L",
+              "Liberation Sans",
+              "FreeSans",
+              "Sans-serif"
+            ],
+            "size": 8,
+            "style": "BOLD"
+          }
+        },
+        {
+          "baseURL": "http://geoserver:8080/geoserver/wms",
+          "opacity": 1,
+          "type": "WMS",
+          "layers": ["tiger:tiger_roads"],
+          "imageFormat": "image/png",
+          "styles": ["line"],
+          "customParams": {
+            "TRANSPARENT": "true"
+          }
         }
       ]
     }
   }
 }
-
-
