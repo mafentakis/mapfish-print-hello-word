@@ -1,0 +1,9 @@
+version: '3'
+services:
+  mapfish-print-v3:
+    build:
+      context: mapfish-print-v3/
+    ports:
+      - 18083:8080
+    volumes:
+      - ./mapfish-print-v3/print-apps:/usr/local/tomcat/webapps/ROOT/print-apps:Z

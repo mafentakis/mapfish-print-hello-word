@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapFish Print</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .url-box { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; word-break: break-all; margin: 10px 0; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ MapFish Print</h1>
+
+    <h3>Choose Layout:</h3>
+    <button onclick="createPrintJob('A4 portrait')">📄 A4 Portrait</button>
+    <button onclick="createPrintJob('A4 landscape')">📄 A4 Landscape</button>
+    <button onclick="createPrintJob('A4 simple')">📄 A4 Simple</button>
+
+    <div id="status"></div>
+    <div id="urls"></div>
+
+    <script>
+        const BASE_URL = 'http://localhost:18083';
+        const APP_NAME = 'default';
+
+        function getRequestData(layout) {
+            const baseData = {
+                "attributes": {
+                    "map": {
+                        "bbox": [87741.27046802844, 5468479.575967243, 1090000.7295319715, 5892512.424032757],
+                        "dpi": 200,
+                        "layers": [{
+                            "baseURL": "https://ows.terrestris.de/osm/service?",
+                            "customParams": {"LAYERS": "OSM-WMS", "STYLES": "", "TRANSPARENT": true, "VERSION": "1.1.1"},
+                            "tileSize": [512, 512],
+                            "layers": ["OSM-WMS"],
+                            "opacity": 1,
+                            "styles": [""],
+                            "type": "tiledwms"
+                        }],
+                        "projection": "EPSG:25832",
+                        "rotation": 0
+                    }
+                },
+                "layout": layout
+            };
+
+            // Add legend only for portrait and landscape (not simple)
+            if (layout !== 'A4 simple') {
+                baseData.attributes.legend = {
+                    "name": "",
+                    "classes": [{
+                        "name": "OSM-WMS",
+                        "icons": ["https://ows.terrestris.de/osm/service?SERVICE=WMS&REQUEST=GetLegendGraphic&VERSION=1.3.0&LAYER=OSM-WMS&FORMAT=image/png"]
+                    }]
+                };
+            }
+
+            return baseData;
+        }
+
+        function showStatus(message, type = 'info') {
+            document.getElementById('status').innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        async function createPrintJob(layout) {
+            showStatus(`🚀 Creating ${layout} print job...`, 'info');
+
+            try {
+                const requestData = getRequestData(layout);
+                const response = await fetch(`${BASE_URL}/print/${APP_NAME}/report.pdf`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                const jobRef = result.ref;
+
+                if (jobRef) {
+                    const downloadUrl = `${BASE_URL}/print/${APP_NAME}/report/${jobRef}`;
+
+                    showStatus(`✅ ${layout} print job created!`, 'success');
+                    document.getElementById('urls').innerHTML = `
+                        <p><strong>Layout:</strong> ${layout}</p>
+                        <p><strong>Download URL:</strong></p>
+                        <div class="url-box">${downloadUrl}</div>
+                        <button onclick="window.open('${downloadUrl}', '_blank')">📥 Download PDF</button>
+                    `;
+                } else {
+                    showStatus('❌ No job reference received', 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
