@@ -22,6 +22,7 @@
     <button onclick="createPrintJob('A4 portrait')">📄 A4 Portrait</button>
     <button onclick="createPrintJob('A4 landscape')">📄 A4 Landscape</button>
     <button onclick="createPrintJob('A4 simple')">📄 A4 Simple</button>
+    <button onclick="createGAWMTSPrintJob()">🌍 GA WMTS</button>
 
     <div id="status"></div>
     <div id="urls"></div>
@@ -90,6 +91,69 @@
                     showStatus(`✅ ${layout} print job created!`, 'success');
                     document.getElementById('urls').innerHTML = `
                         <p><strong>Layout:</strong> ${layout}</p>
+                        <p><strong>Download URL:</strong></p>
+                        <div class="url-box">${downloadUrl}</div>
+                        <button onclick="window.open('${downloadUrl}', '_blank')">📥 Download PDF</button>
+                    `;
+                } else {
+                    showStatus('❌ No job reference received', 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createGAWMTSPrintJob() {
+            showStatus(`🚀 Creating GA WMTS print job...`, 'info');
+
+            try {
+                const requestData = {
+                    "attributes": {
+                        "map": {
+                            "bbox": [87741.27046802844, 5468479.575967243, 1090000.7295319715, 5892512.424032757],
+                            "dpi": 200,
+                            "layers": [{
+                                "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/{Layer}/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+                                         
+                                "customParams": {"LAYERS": "de_basemapde_web_raster_farbe", "STYLES": "", "TRANSPARENT": true, "VERSION": "1.0.0"},
+                                "layer": "de_basemapde_web_raster_farbe",
+                                "matrixSet": "DE_EPSG_3857_ADV",
+                                "imageFormat": "image/png",
+                                "style": "default",
+                                "type": "wmts",
+                                "matrices": [
+                                    {"identifier": "00", "scaleDenominator": 17471320.750897426, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [32, 32]},
+                                    {"identifier": "01", "scaleDenominator": 8735660.375448713, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [64, 64]},
+                                    {"identifier": "02", "scaleDenominator": 4367830.187724357, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [128, 128]},
+                                    {"identifier": "03", "scaleDenominator": 2183915.0938621783, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [256, 256]},
+                                    {"identifier": "04", "scaleDenominator": 1091957.5469310891, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [512, 512]},
+                                    {"identifier": "05", "scaleDenominator": 545978.7734655463, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [1024, 1024]}
+                                ]
+                            }],
+                            "projection": "EPSG:25832",
+                            "rotation": 0
+                        }
+                    },
+                    "layout": "A4 simple"
+                };
+
+                const response = await fetch(`${BASE_URL}/print/${APP_NAME}/report.pdf`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                const jobRef = result.ref;
+
+                if (jobRef) {
+                    const downloadUrl = `${BASE_URL}/print/${APP_NAME}/report/${jobRef}`;
+
+                    showStatus(`✅ GA WMTS print job created!`, 'success');
+                    document.getElementById('urls').innerHTML = `
+                        <p><strong>Layout:</strong> A4 Simple (GA WMTS)</p>
+                        <p><strong>Layer:</strong> de_basemapde_web_raster_farbe</p>
+                        <p><strong>Matrix Set:</strong> DE_EPSG_3857_ADV</p>
                         <p><strong>Download URL:</strong></p>
                         <div class="url-box">${downloadUrl}</div>
                         <button onclick="window.open('${downloadUrl}', '_blank')">📥 Download PDF</button>
