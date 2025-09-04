@@ -110,12 +110,12 @@
                 const requestData = {
                     "attributes": {
                         "map": {
-                            "bbox": [87741.27046802844, 5468479.575967243, 1090000.7295319715, 5892512.424032757],
+                            "bbox": [87741, 5468479, 1090000, 7598600],
                             "dpi": 200,
                             "layers": [{
                                 "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/{Layer}/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
                                          
-                                "customParams": {"LAYERS": "de_basemapde_web_raster_farbe", "STYLES": "", "TRANSPARENT": true, "VERSION": "1.0.0"},
+                                "customParams": {"LAYERS": "de_basemapde_web_raster_farbe", "STYLES": "default", "TRANSPARENT": true, "VERSION": "1.0.0"},
                                 "layer": "de_basemapde_web_raster_farbe",
                                 "matrixSet": "DE_EPSG_3857_ADV",
                                 "imageFormat": "image/png",
@@ -127,10 +127,18 @@
                                     {"identifier": "02", "scaleDenominator": 4367830.187724357, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [128, 128]},
                                     {"identifier": "03", "scaleDenominator": 2183915.0938621783, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [256, 256]},
                                     {"identifier": "04", "scaleDenominator": 1091957.5469310891, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [512, 512]},
-                                    {"identifier": "05", "scaleDenominator": 545978.7734655463, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [1024, 1024]}
+                                    {"identifier": "05", "scaleDenominator": 545978.7734655463, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [1024, 1024]},
+                                    {"identifier": "06", "scaleDenominator": 272989.38673277246, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [2048, 2048]},
+                                    {"identifier": "07", "scaleDenominator": 136494.69336638605, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [4096, 4096]},
+                                    {"identifier": "08", "scaleDenominator": 68247.3466831932, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [8192, 8192]},
+                                    {"identifier": "09", "scaleDenominator": 34123.673341596535, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [16384, 16384]},
+                                    {"identifier": "10", "scaleDenominator": 17061.836670798286, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [32768, 32768]},
+                                    {"identifier": "11", "scaleDenominator": 8530.918335399143, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [65536, 65536]},
+                                    {"identifier": "12", "scaleDenominator": 4265.4591676995715, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [131072, 131072]},
+                                    {"identifier": "13", "scaleDenominator": 2132.729583849782, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [262144, 262144]}
                                 ]
                             }],
-                            "projection": "EPSG:25832",
+                            "projection": "EPSG:3857",
                             "rotation": 0
                         }
                     },
