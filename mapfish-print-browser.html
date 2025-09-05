@@ -103,10 +103,138 @@
             }
         }
 
+        function extractWMTSParameters(doc, matrixSetId = 'DE_EPSG_3857_ADV') {
+            console.log('🔍 Starting parameter extraction...');
+            console.log('🔍 Document root element:', doc.documentElement.tagName);
+
+            // Get layer info - try different selectors
+            let layerElement = doc.querySelector('Layer ows\\:Identifier') ||
+                              doc.querySelector('Layer Identifier') ||
+                              doc.querySelector('ows\\:Identifier');
+
+            if (!layerElement) {
+                console.error('❌ Could not find layer identifier');
+                throw new Error('Layer identifier not found in capabilities');
+            }
+            const layer = layerElement.textContent;
+            console.log('🔍 Layer:', layer);
+
+            // Get ResourceURL template
+            const resourceURLElement = doc.querySelector('ResourceURL[resourceType="tile"]');
+            if (!resourceURLElement) {
+                console.error('❌ Could not find ResourceURL element');
+                throw new Error('ResourceURL not found in capabilities');
+            }
+            const resourceURL = resourceURLElement.getAttribute('template');
+            console.log('🔍 ResourceURL template:', resourceURL);
+
+            // Get available formats
+            const formatElements = doc.querySelectorAll('Layer Format');
+            const formats = Array.from(formatElements).map(f => f.textContent);
+            console.log('🔍 Available formats:', formats);
+
+            // Get available matrix sets
+            const matrixSetElements = doc.querySelectorAll('TileMatrixSetLink TileMatrixSet');
+            const matrixSets = Array.from(matrixSetElements).map(ms => ms.textContent);
+            console.log('🔍 Available matrix sets:', matrixSets);
+
+            // Get style
+            const styleElement = doc.querySelector('Style ows\\:Identifier') ||
+                                doc.querySelector('Style Identifier');
+            if (!styleElement) {
+                console.error('❌ Could not find style identifier');
+                throw new Error('Style identifier not found in capabilities');
+            }
+            const style = styleElement.textContent;
+            console.log('🔍 Style:', style);
+
+            // Get matrix definitions for specified matrix set
+            const matrixSetElements = doc.querySelectorAll('TileMatrixSet');
+            console.log('🔍 Found', matrixSetElements.length, 'TileMatrixSet elements');
+
+            const matrixSetElement = Array.from(matrixSetElements).find(ms => {
+                const idElement = ms.querySelector('ows\\:Identifier') || ms.querySelector('Identifier');
+                return idElement && idElement.textContent === matrixSetId;
+            });
+
+            if (!matrixSetElement) {
+                console.error('❌ Matrix set not found:', matrixSetId);
+                console.log('🔍 Available matrix sets in document:',
+                    Array.from(matrixSetElements).map(ms => {
+                        const idEl = ms.querySelector('ows\\:Identifier') || ms.querySelector('Identifier');
+                        return idEl ? idEl.textContent : 'NO_ID';
+                    })
+                );
+                throw new Error(`Matrix set ${matrixSetId} not found in capabilities`);
+            }
+
+            const tileMatrixElements = matrixSetElement.querySelectorAll('TileMatrix');
+            console.log('🔍 Found', tileMatrixElements.length, 'TileMatrix elements');
+
+            const matrices = Array.from(tileMatrixElements).map(tm => {
+                const idElement = tm.querySelector('ows\\:Identifier') || tm.querySelector('Identifier');
+                const scaleElement = tm.querySelector('ScaleDenominator');
+                const cornerElement = tm.querySelector('TopLeftCorner');
+                const widthElement = tm.querySelector('TileWidth');
+                const heightElement = tm.querySelector('TileHeight');
+                const matrixWidthElement = tm.querySelector('MatrixWidth');
+                const matrixHeightElement = tm.querySelector('MatrixHeight');
+
+                return {
+                    identifier: idElement ? idElement.textContent : 'UNKNOWN',
+                    scaleDenominator: scaleElement ? parseFloat(scaleElement.textContent) : 0,
+                    topLeftCorner: cornerElement ? cornerElement.textContent.split(' ').map(Number) : [0, 0],
+                    tileSize: [
+                        widthElement ? parseInt(widthElement.textContent) : 256,
+                        heightElement ? parseInt(heightElement.textContent) : 256
+                    ],
+                    matrixSize: [
+                        matrixWidthElement ? parseInt(matrixWidthElement.textContent) : 1,
+                        matrixHeightElement ? parseInt(matrixHeightElement.textContent) : 1
+                    ]
+                };
+            });
+
+            console.log('🔍 Matrices for', matrixSetId, ':', matrices);
+
+            return {
+                baseURL: resourceURL,
+                layer: layer,
+                matrixSet: matrixSetId,
+                imageFormat: formats[0], // Use first available format
+                style: style,
+                matrices: matrices,
+                availableMatrixSets: matrixSets,
+                availableFormats: formats
+            };
+        }
+
+        async function parseWMTSCapabilities(matrixSetId = 'DE_EPSG_3857_ADV') {
+            try {
+                const response = await fetch('https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml');
+                const capabilitiesText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(capabilitiesText, 'text/xml');
+
+                return extractWMTSParameters(doc, matrixSetId);
+
+            } catch (error) {
+                console.error('❌ Error parsing capabilities:', error);
+                return null;
+            }
+        }
+
         async function createGAWMTSPrintJob() {
             showStatus(`🚀 Creating GA WMTS print job...`, 'info');
 
             try {
+                // Parse capabilities to get WMTS parameters
+                const wmtsConfig = await parseWMTSCapabilities();
+                if (!wmtsConfig) {
+                    throw new Error('Failed to parse WMTS capabilities');
+                }
+
+                console.log('🔧 Generated WMTS config:', wmtsConfig);
                 const requestData = {
                     "attributes": {
                         "map": {
@@ -115,30 +243,15 @@
                             "scale": 25000,
                             "dpi": 200,
                             "layers": [{
-                                "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/{Layer}/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
-
-                                "customParams": {"LAYERS": "de_basemapde_web_raster_farbe", "STYLES": "default", "TRANSPARENT": true, "VERSION": "1.0.0"},
-                                "layer": "de_basemapde_web_raster_farbe",
-                                "matrixSet": "DE_EPSG_3857_ADV",
-                                "imageFormat": "image/png",
-                                "style": "default",
+                                "baseURL": wmtsConfig.baseURL,
+                                "customParams": {"LAYERS": wmtsConfig.layer, "STYLES": wmtsConfig.style, "TRANSPARENT": true, "VERSION": "1.0.0"},
+                                "layer": wmtsConfig.layer,
+                                "matrixSet": wmtsConfig.matrixSet,
+                                "imageFormat": wmtsConfig.imageFormat,
+                                "style": wmtsConfig.style,
+                                "requestEncoding": "REST",
                                 "type": "wmts",
-                                "matrices": [
-                                    {"identifier": "00", "scaleDenominator": 17471320.750897426, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [32, 32]},
-                                    {"identifier": "01", "scaleDenominator": 8735660.375448713, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [64, 64]},
-                                    {"identifier": "02", "scaleDenominator": 4367830.187724357, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [128, 128]},
-                                    {"identifier": "03", "scaleDenominator": 2183915.0938621783, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [256, 256]},
-                                    {"identifier": "04", "scaleDenominator": 1091957.5469310891, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [512, 512]},
-                                    {"identifier": "05", "scaleDenominator": 545978.7734655463, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [1024, 1024]},
-                                    {"identifier": "06", "scaleDenominator": 272989.38673277246, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [2048, 2048]},
-                                    {"identifier": "07", "scaleDenominator": 136494.69336638605, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [4096, 4096]},
-                                    {"identifier": "08", "scaleDenominator": 68247.3466831932, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [8192, 8192]},
-                                    {"identifier": "09", "scaleDenominator": 34123.673341596535, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [16384, 16384]},
-                                    {"identifier": "10", "scaleDenominator": 17061.836670798286, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [32768, 32768]},
-                                    {"identifier": "11", "scaleDenominator": 8530.918335399143, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [65536, 65536]},
-                                    {"identifier": "12", "scaleDenominator": 4265.4591676995715, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [131072, 131072]},
-                                    {"identifier": "13", "scaleDenominator": 2132.729583849782, "topLeftCorner": [-20037508.3427892, 20037508.3427892], "tileSize": [256, 256], "matrixSize": [262144, 262144]}
-                                ]
+                                "matrices": wmtsConfig.matrices
                             }],
                             "projection": "EPSG:3857",
                             "rotation": 0
@@ -146,6 +259,8 @@
                     },
                     "layout": "A4 simple"
                 };
+
+                console.log('📋 Final request data:', JSON.stringify(requestData, null, 2));
 
                 const response = await fetch(`${BASE_URL}/print/${APP_NAME}/report.pdf`, {
                     method: 'POST',
