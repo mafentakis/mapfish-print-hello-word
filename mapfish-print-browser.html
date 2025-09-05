@@ -110,11 +110,13 @@
                 const requestData = {
                     "attributes": {
                         "map": {
-                            "bbox": [87741, 5468479, 1090000, 7598600],
+
+                            "center": [894000, 6598000],
+                            "scale": 25000,
                             "dpi": 200,
                             "layers": [{
                                 "baseURL": "https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/{Layer}/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
-                                         
+
                                 "customParams": {"LAYERS": "de_basemapde_web_raster_farbe", "STYLES": "default", "TRANSPARENT": true, "VERSION": "1.0.0"},
                                 "layer": "de_basemapde_web_raster_farbe",
                                 "matrixSet": "DE_EPSG_3857_ADV",
